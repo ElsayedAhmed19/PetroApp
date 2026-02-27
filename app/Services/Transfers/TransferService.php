@@ -3,11 +3,11 @@
 namespace App\Services\Transfers;
 
 use App\Dtos\TransferEventDto;
-use App\Repositories\Transfers\TransferStoreRepoInterface;
+use App\Repositories\Transfers\BaseTransferRepository;
 
 class TransferService implements TransferServiceInterface
 {
-    public function __construct(private TransferStoreRepoInterface $transferStoreRepo) {}
+    public function __construct(private BaseTransferRepository $transferStoreRepo) {}
 
     /**
      * @param array $events

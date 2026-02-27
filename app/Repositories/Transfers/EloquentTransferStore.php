@@ -7,7 +7,7 @@ use App\Models\TransferEvent;
 use App\Exceptions\DuplicateEventException;
 use Throwable;
 
-class EloquentTransferStore extends TransferStoreRepoInterface
+class EloquentTransferStore extends BaseTransferRepository
 {
     /**
      * @inheritDoc

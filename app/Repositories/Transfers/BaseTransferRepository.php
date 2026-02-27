@@ -9,7 +9,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-abstract class TransferStoreRepoInterface
+abstract class BaseTransferRepository
 {
     /**
      * @param TransferEventDto[] $events
