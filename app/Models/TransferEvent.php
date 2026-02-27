@@ -3,13 +3,11 @@
 namespace App\Models;
 
 use App\Enums\TransferStatus;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TransferEvent extends Model
 {
-    use HasFactory;
+    public $timestamps = true;
 
     protected $fillable = [
         'event_id',
@@ -24,12 +22,4 @@ class TransferEvent extends Model
         'status' => TransferStatus::class,
         'source_created_at' => 'datetime',
     ];
-
-    /**
-     * Get the station that owns the transfer.
-     */
-    public function station(): BelongsTo
-    {
-        return $this->belongsTo(Station::class);
-    }
 }
