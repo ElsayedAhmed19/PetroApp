@@ -17,7 +17,13 @@ RUN apt-get update && apt-get install -y \
     zip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo pdo_mysql mbstring zip exif pcntl bcmath gd \
+    # For only development environment
+    && pecl install xdebug \
+    && docker-php-ext-enable xdebug \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Copy Xdebug configuration
+COPY docker/php/xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
 # Install Composer
 COPY --from=composer /usr/bin/composer /usr/bin/composer
