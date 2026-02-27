@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Api\TransferController;
+use App\Http\Controllers\Api\EventTransferController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/transfers', [TransferController::class, 'store']);
+Route::post('/transfers', [EventTransferController::class, 'store']);
