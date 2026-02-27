@@ -13,7 +13,7 @@ class TransferController extends Controller
     /**
      * POST api/transfers
      */
-    public function transfer(StoreTransferBatchRequest $request): JsonResponse
+    public function store(StoreTransferBatchRequest $request): JsonResponse
     {
         return response()->json($request->validated(), 201);
     }
