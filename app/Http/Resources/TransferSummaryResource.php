@@ -15,9 +15,9 @@ class TransferSummaryResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'station_id' => $this['station_id'],
-            'total_approved_amount' => (float) $this['total_approved_amount'],
-            'events_count' => $this['events_count'],
+            'station_id' => $this->stationId,
+            'total_approved_amount' => $this->totalApprovedAmount,
+            'events_count' => $this->eventsCount,
         ];
     }
 }

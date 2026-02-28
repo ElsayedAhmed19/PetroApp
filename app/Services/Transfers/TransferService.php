@@ -3,6 +3,8 @@
 namespace App\Services\Transfers;
 
 use App\Dtos\TransferEventDto;
+use App\Dtos\TransferFilterDto;
+use App\Dtos\StationSummaryDto;
 use App\Repositories\Transfers\BaseTransferRepository;
 
 class TransferService implements TransferServiceInterface
@@ -19,8 +21,8 @@ class TransferService implements TransferServiceInterface
         return $this->transferStoreRepo->storeBatch($events);
     }
 
-    public function summary(int $stationId): array
+    public function summary(int $stationId, TransferFilterDto $filters): StationSummaryDto
     {
-        return $this->transferStoreRepo->summary($stationId);
+        return $this->transferStoreRepo->summary($stationId, $filters);
     }
 }

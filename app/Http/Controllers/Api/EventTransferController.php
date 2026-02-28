@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Dtos\TransferFilterDto;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTransferBatchRequest;
 use App\Http\Requests\TransferSummaryRequest;
+use App\Http\Resources\TransferSummaryResource;
 use App\Services\Transfers\TransferServiceInterface;
 use Illuminate\Http\JsonResponse;
 
@@ -24,8 +26,10 @@ class EventTransferController extends Controller
 
     public function summary(TransferSummaryRequest $request): JsonResponse
     {
-        $summary = $this->transferService->summary($request->stationId);
+        $filters = TransferFilterDto::fromArray($request->validated());
 
-        return $this->getJsonSuccessResponse($summary);
+        $summary = $this->transferService->summary($request->stationId, $filters);
+
+        return $this->getJsonSuccessResponse(new TransferSummaryResource($summary));
     }
 }

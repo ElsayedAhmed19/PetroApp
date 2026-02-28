@@ -3,6 +3,8 @@
 namespace App\Repositories\Transfers;
 
 use App\Dtos\TransferEventDto;
+use App\Dtos\TransferFilterDto;
+use App\Dtos\StationSummaryDto;
 use App\Models\TransferEvent;
 use App\Exceptions\DuplicateEventException;
 use Illuminate\Support\Collection;
@@ -64,7 +66,6 @@ abstract class BaseTransferRepository
 
     /**
      * Get the summary of transfers for a station.
-     * @return array{station_id: int, total_approved_amount: float, events_count: int}
      */
-    abstract public function summary(int $stationId): array;
+    abstract public function summary(int $stationId, TransferFilterDto $filters): StationSummaryDto;
 }
