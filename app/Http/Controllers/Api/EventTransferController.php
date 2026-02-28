@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTransferBatchRequest;
+use App\Http\Requests\TransferSummaryRequest;
 use App\Services\Transfers\TransferServiceInterface;
 use Illuminate\Http\JsonResponse;
 
@@ -18,6 +19,13 @@ class EventTransferController extends Controller
     {
         $result = $this->transferService->store($request->validated()['events']);
 
-        return response()->json($result, 201);
+        return $this->postJsonSuccessResponse($result);
+    }
+
+    public function summary(TransferSummaryRequest $request): JsonResponse
+    {
+        $summary = $this->transferService->summary($request->stationId);
+
+        return $this->getJsonSuccessResponse($summary);
     }
 }

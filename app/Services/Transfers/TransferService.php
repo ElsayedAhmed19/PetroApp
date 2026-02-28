@@ -18,4 +18,9 @@ class TransferService implements TransferServiceInterface
 
         return $this->transferStoreRepo->storeBatch($events);
     }
+
+    public function summary(int $stationId): array
+    {
+        return $this->transferStoreRepo->summary($stationId);
+    }
 }

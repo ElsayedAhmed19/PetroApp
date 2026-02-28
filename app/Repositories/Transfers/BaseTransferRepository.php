@@ -61,4 +61,10 @@ abstract class BaseTransferRepository
      * @throws DuplicateEventException
      */
     abstract public function save(TransferEventDto $eventDto): TransferEvent;
+
+    /**
+     * Get the summary of transfers for a station.
+     * @return array{station_id: int, total_approved_amount: float, events_count: int}
+     */
+    abstract public function summary(int $stationId): array;
 }
