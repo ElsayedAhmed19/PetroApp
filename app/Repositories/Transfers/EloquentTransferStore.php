@@ -48,14 +48,13 @@ class EloquentTransferStore extends BaseTransferRepository
      */
     public function summary(int $stationId, TransferFilterDto $filters): StationSummaryDto
     {
-        $approvedStatus = 'approved';
         $statusFilter = $filters->status;
 
         $summary = TransferEvent::where('station_id', $stationId)
             ->selectRaw('station_id')
-            ->selectRaw("SUM(CASE WHEN status = ? THEN amount ELSE 0 END) as total_approved_amount", [$approvedStatus])
-            ->when($statusFilter, function ($query) use ($statusFilter) {
-                return $query->selectRaw("COUNT(CASE WHEN status = ? THEN 1 END) as events_count", [$statusFilter]);
+            ->selectRaw("SUM(CASE WHEN status = 'approved' THEN amount ELSE 0 END) as total_approved_amount")
+            ->when($statusFilter && $statusFilter === 'approved', function ($query) {
+                return $query->selectRaw("COUNT(CASE WHEN status = 'approved' THEN 1 END) as events_count");
             }, function ($query) {
                 return $query->selectRaw("COUNT(*) as events_count");
             })
