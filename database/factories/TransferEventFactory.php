@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\TransferEvent;
-use App\Enums\TransferStatus;
 use App\Models\Station;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -25,7 +24,7 @@ class TransferEventFactory extends Factory
             'event_id' => $this->faker->uuid(),
             'station_id' => Station::factory(),
             'amount' => $this->faker->randomFloat(2, 10, 500),
-            'status' => $this->faker->randomElement(['approved', 'pending', 'canceled']),
+            'status' => $this->faker->randomElement(['approved', 'pending', 'rejected']),
             'created_at' => $this->faker->dateTimeBetween('-1 month', 'now'),
         ];
     }

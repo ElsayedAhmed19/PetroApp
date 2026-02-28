@@ -4,8 +4,6 @@ namespace App\Http\Requests;
 
 use App\Rules\Iso8601;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Enum;
-use App\Enums\TransferStatus;
 
 class StoreTransferBatchRequest extends FormRequest
 {
@@ -43,7 +41,7 @@ class StoreTransferBatchRequest extends FormRequest
             'event_id' => ['required', 'uuid'],
             'station_id' => ['required', 'integer', 'exists:stations,id'],
             'amount' => ['required', 'numeric', 'min:0'],
-            'status' => ['required', 'string', new Enum(TransferStatus::class)],
+            'status' => ['required', 'string'],
             'created_at' => ['required', new Iso8601()],
         ];
     }

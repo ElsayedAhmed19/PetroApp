@@ -6,7 +6,6 @@ use App\Dtos\TransferEventDto;
 use App\Dtos\TransferFilterDto;
 use App\Dtos\StationSummaryDto;
 use App\Models\TransferEvent;
-use App\Enums\TransferStatus;
 use App\Exceptions\DuplicateEventException;
 use Throwable;
 
@@ -49,14 +48,14 @@ class EloquentTransferStore extends BaseTransferRepository
      */
     public function summary(int $stationId, TransferFilterDto $filters): StationSummaryDto
     {
-        $approvedStatus = TransferStatus::APPROVED->value;
-        $isApprovedOnly = $filters->status === TransferStatus::APPROVED;
+        $approvedStatus = 'approved';
+        $statusFilter = $filters->status;
 
         $summary = TransferEvent::where('station_id', $stationId)
             ->selectRaw('station_id')
             ->selectRaw("SUM(CASE WHEN status = ? THEN amount ELSE 0 END) as total_approved_amount", [$approvedStatus])
-            ->when($isApprovedOnly, function ($query) use ($approvedStatus) {
-                return $query->selectRaw("COUNT(CASE WHEN status = ? THEN 1 END) as events_count", [$approvedStatus]);
+            ->when($statusFilter, function ($query) use ($statusFilter) {
+                return $query->selectRaw("COUNT(CASE WHEN status = ? THEN 1 END) as events_count", [$statusFilter]);
             }, function ($query) {
                 return $query->selectRaw("COUNT(*) as events_count");
             })

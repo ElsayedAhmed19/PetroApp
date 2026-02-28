@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\TransferStatus;
 use Illuminate\Database\Eloquent\Model;
 
 class TransferEvent extends Model
@@ -19,7 +18,6 @@ class TransferEvent extends Model
 
     protected $casts = [
         'amount' => 'decimal:3',
-        'status' => TransferStatus::class,
         'source_created_at' => 'datetime',
     ];
 }
