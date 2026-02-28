@@ -16,6 +16,7 @@ class TransferSummaryRequest extends FormRequest
     {
         return [
             'stationId' => ['required', 'integer', 'exists:stations,id'],
+            'status' => ['nullable', 'string', 'in:approved,pending,rejected'],
         ];
     }
 
