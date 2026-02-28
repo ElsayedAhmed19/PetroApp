@@ -20,7 +20,7 @@ class TransferService implements TransferServiceInterface
      */
     public function store(array $events): StoreBatchResultDto
     {
-        $strategy = env('TRANSFERS_BATCH_STRATEGY', 'partial');
+        $strategy = config('event_transfers.batch_strategy', 'partial');
 
         $categorized = $this->categorizeEventsAfterValidation($events);
         $validEvents = $categorized['validEvents'];

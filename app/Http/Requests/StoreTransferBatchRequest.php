@@ -17,7 +17,7 @@ class StoreTransferBatchRequest extends FormRequest
 
     public function rules(): array
     {
-        $strategy = env('TRANSFERS_BATCH_STRATEGY', 'partial');
+        $strategy = config('transfers.batch_strategy', 'partial');
 
         if ($strategy === 'fail-fast') {
             $rules = ['events' => ['required', 'array', 'min:1']];
