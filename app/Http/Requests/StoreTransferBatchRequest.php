@@ -2,7 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\Iso8601;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
+use App\Enums\TransferStatus;
 
 class StoreTransferBatchRequest extends FormRequest
 {
@@ -14,8 +17,34 @@ class StoreTransferBatchRequest extends FormRequest
 
     public function rules(): array
     {
+        $strategy = env('TRANSFERS_BATCH_STRATEGY', 'partial');
+
+        if ($strategy === 'fail-fast') {
+            $rules = ['events' => ['required', 'array', 'min:1']];
+
+            foreach (self::getItemRules() as $key => $rule) {
+                $rules["events.*.{$key}"] = $rule;
+            }
+            return $rules;
+        }
+
         return [
             'events' => ['required', 'array', 'min:1'],
+        ];
+    }
+
+    /**
+     * Centralized rules for a single transfer event.
+     * Shared between FormRequest (fail-fast) and Service (partial-accept).
+     */
+    public static function getItemRules(): array
+    {
+        return [
+            'event_id' => ['required', 'uuid'],
+            'station_id' => ['required', 'integer', 'exists:stations,id'],
+            'amount' => ['required', 'numeric', 'min:0'],
+            'status' => ['required', 'string', new Enum(TransferStatus::class)],
+            'created_at' => ['required', new Iso8601()],
         ];
     }
 

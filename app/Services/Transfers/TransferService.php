@@ -6,9 +6,10 @@ use App\Dtos\TransferEventDto;
 use App\Dtos\TransferFilterDto;
 use App\Dtos\StationSummaryDto;
 use App\Dtos\StoreBatchResultDto;
+use App\Http\Requests\StoreTransferBatchRequest;
 use App\Repositories\Transfers\BaseTransferRepository;
-use App\Rules\Iso8601;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class TransferService implements TransferServiceInterface
 {
@@ -19,10 +20,17 @@ class TransferService implements TransferServiceInterface
      */
     public function store(array $events): StoreBatchResultDto
     {
-        [
-            'validEvents' => $validEvents,
-            'failedItems' => $failedItems
-        ] = $this->categorizeEventsAfterValidation($events);
+        $strategy = env('TRANSFERS_BATCH_STRATEGY', 'partial');
+
+        $categorized = $this->categorizeEventsAfterValidation($events);
+        $validEvents = $categorized['validEvents'];
+        $failedItems = $categorized['failedItems'];
+        $formRequestErrors = $categorized['formRequestErrors'];
+
+        // If strategy is fail-fast and we have ANY failures, throw exception immediately
+        if ($strategy === 'fail-fast' && count($failedItems) > 0) {
+            throw ValidationException::withMessages($formRequestErrors);
+        }
 
         $result = $this->transferStoreRepo->storeBatch($validEvents);
 
@@ -42,24 +50,26 @@ class TransferService implements TransferServiceInterface
     {
         $validEvents = collect();
         $failedItems = [];
+        $formRequestErrors = [];
 
-        $rules = [
-            'event_id' => ['required', 'uuid'],
-            'station_id' => ['required', 'integer', 'exists:stations,id'],
-            'amount' => ['required', 'numeric', 'min:0'],
-            'status' => ['required', 'string'],
-            'created_at' => ['required', new Iso8601()],
-        ];
+        $rules = StoreTransferBatchRequest::getItemRules();
 
         foreach ($events as $index => $eventData) {
             $validator = Validator::make($eventData, $rules);
 
             if ($validator->fails()) {
+                // Collect for Partial Accept response
                 $failedItems[] = [
                     'order_at_file' => $index,
                     'event_id' => $eventData['event_id'] ?? 'N/A',
                     'errors' => $validator->errors()->all(),
                 ];
+
+                // Collect for FormRequest-style Exception
+                foreach ($validator->errors()->toArray() as $field => $messages) {
+                    $formRequestErrors["events.{$index}.{$field}"] = $messages;
+                }
+
                 continue;
             }
 
@@ -69,6 +79,7 @@ class TransferService implements TransferServiceInterface
         return [
             'validEvents' => $validEvents,
             'failedItems' => $failedItems,
+            'formRequestErrors' => $formRequestErrors,
         ];
     }
 }
