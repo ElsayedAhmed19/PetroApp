@@ -2,10 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\TransferStatus;
-use App\Rules\Iso8601;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Enum;
 
 class StoreTransferBatchRequest extends FormRequest
 {
@@ -19,21 +16,11 @@ class StoreTransferBatchRequest extends FormRequest
     {
         return [
             'events' => ['required', 'array', 'min:1'],
-            'events.*.event_id' => ['required', 'uuid'],
-            'events.*.station_id' => ['required', 'integer', 'exists:stations,id'],
-            'events.*.amount' => ['required', 'numeric', 'min:0'],
-            'events.*.status' => ['required', 'string', new Enum(TransferStatus::class)],
-            'events.*.created_at' => ['required', new Iso8601()],
         ];
     }
 
     public function messages(): array
     {
-        return [
-            'events.*.created_at.date_format' => 'The created_at field must be in ISO8601 format (e.g., 2026-02-19T10:00:00Z).',
-            'events.*.amount.gt' => 'The amount must be greater than zero.',
-            'events.*.station_id.exists' => 'The selected station_id is invalid.',
-            'events.*.status' => 'The status must be a valid transfer status (' . implode(', ', array_column(TransferStatus::cases(), 'value')) . ').',
-        ];
+        return [];
     }
 }

@@ -17,6 +17,7 @@ class StoreBatchResource extends JsonResource
         return [
             'inserted' => $this->inserted,
             'duplicates' => $this->duplicates,
+            'validation_failed_items' => $this->validation_failed_items,
         ];
     }
 }

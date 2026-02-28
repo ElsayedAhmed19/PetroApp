@@ -50,6 +50,7 @@ abstract class BaseTransferRepository
         return new StoreBatchResultDto(
             inserted: $insertedCount,
             duplicates: $duplicateCount,
+            validation_failed_items: []
         );
     }
 

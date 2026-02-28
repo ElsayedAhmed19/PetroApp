@@ -2,7 +2,6 @@
 
 namespace App\Dtos;
 
-use App\Enums\TransferStatus;
 use DateTimeImmutable;
 use Illuminate\Support\Collection;
 
@@ -12,7 +11,7 @@ readonly class TransferEventDto
         public string $eventId,
         public int $stationId,
         public float $amount,
-        public TransferStatus $status,
+        public string $status,
         public DateTimeImmutable $createdAt
     ) {}
 
@@ -22,9 +21,7 @@ readonly class TransferEventDto
             eventId: $data['event_id'],
             stationId: (int) $data['station_id'],
             amount: (float) $data['amount'],
-            status: $data['status'] instanceof TransferStatus
-                ? $data['status']
-                : TransferStatus::from($data['status']),
+            status: $data['status'],
             createdAt: new DateTimeImmutable($data['created_at'])
         );
     }
