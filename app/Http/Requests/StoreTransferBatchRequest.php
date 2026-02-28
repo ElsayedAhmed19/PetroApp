@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\TransferStatus;
+use App\Rules\Iso8601;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 
@@ -20,9 +21,9 @@ class StoreTransferBatchRequest extends FormRequest
             'events' => ['required', 'array', 'min:1'],
             'events.*.event_id' => ['required', 'uuid'],
             'events.*.station_id' => ['required', 'integer', 'exists:stations,id'],
-            'events.*.amount' => ['required', 'numeric', 'gt:0'],
+            'events.*.amount' => ['required', 'numeric', 'min:0'],
             'events.*.status' => ['required', 'string', new Enum(TransferStatus::class)],
-            'events.*.created_at' => ['required', 'date_format:Y-m-d\TH:i:s\Z'],
+            'events.*.created_at' => ['required', new Iso8601()],
         ];
     }
 
