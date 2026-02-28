@@ -60,7 +60,7 @@ class TransferService implements TransferServiceInterface
             if ($validator->fails()) {
                 // Collect for Partial Accept response
                 $failedItems[] = [
-                    'order_at_file' => $index,
+                    'index' => $index,
                     'event_id' => $eventData['event_id'] ?? 'N/A',
                     'errors' => $validator->errors()->all(),
                 ];
