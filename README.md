@@ -28,8 +28,25 @@ Relying on database-level atomic guarantees and unique constraints allows the sy
 
 ### Decisions & Tradeoffs
 -   **Partial Accept (Default Strategy)**: The system implements a "partial accept" strategy for batch ingestion. Valid events are stored, and invalid ones are reported with their index and error details in the response. This maximizes data throughput from external systems.
+    - Keeps good data: if one event is bad, the others in the batch are still saved.
+    - Less retry noise: clients don’t need to resend the whole batch, only the failed events.
+    - Clearer errors: we return which items failed and why, so it’s easy to fix them.
+
 -   **Fail-Fast Alternative**: A "fail-fast" mode is available via configuration (`config/event_transfers.php`) which rejects the entire batch if a single validation error occurs.
 -   **Events Count Calculation**: The summary endpoint returns the count of *all* stored events for a station (all statuses), while the total amount sums *only* approved events. This provides a clear distinction between "total throughput" and "reconciled amount".
+
+### Batch Strategy Configuration
+
+- **Default behavior**: By default, the app uses **partial accept** (`batch_strategy = partial` in `config/event_transfers.php`).
+- **Switching to fail-fast**:
+  - In `.env`, set:
+    ```bash
+    EVENT_TRANSFERS_BATCH_STRATEGY=fail-fast
+    ```
+  - Or override at runtime in tests/config with:
+    ```php
+    config(['event_transfers.batch_strategy' => 'fail-fast']);
+    ```
 
 ---
 
@@ -40,7 +57,7 @@ You can run the entire environment (Nginx + PHP-FPM + MySQL) using Docker:
 
 1.  **Build and Run**:
     ```bash
-    docker compose up --build -d
+    docker compose up --build
     ```
     The application will be accessible at `http://localhost:8000`.
 
