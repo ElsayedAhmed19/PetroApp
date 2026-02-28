@@ -25,6 +25,9 @@ class EventTransferController extends Controller
         return $this->postJsonSuccessResponse(new StoreBatchResource($result));
     }
 
+    /**
+     * GET api/stations/{stationId}/summary
+     */
     public function summary(TransferSummaryRequest $request): JsonResponse
     {
         $filters = TransferFilterDto::fromArray($request->validated());
