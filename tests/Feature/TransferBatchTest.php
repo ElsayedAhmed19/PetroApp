@@ -156,7 +156,7 @@ class TransferBatchTest extends TestCase
      */
     public function test_partial_accept_on_validation_failure()
     {
-        config(['transfers.batch_strategy' => 'partial']);
+        config(['event_transfers.batch_strategy' => 'partial']);
 
         $station = Station::factory()->create();
 
@@ -189,7 +189,7 @@ class TransferBatchTest extends TestCase
      */
     public function test_fail_fast_validation_strategy()
     {
-        config(['transfers.batch_strategy' => 'fail-fast']);
+        config(['event_transfers.batch_strategy' => 'fail-fast']);
 
         $station = Station::factory()->create();
 
