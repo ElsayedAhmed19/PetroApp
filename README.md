@@ -1,59 +1,143 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# PetroApp - Station Transfer Ingestion System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A robust, idempotent, and concurrency-safe system for ingesting fuel station transfer events. Developed as a candidate take-home assignment.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🚀 Tech Stack + Requirements
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **PHP**: ^8.2 (Leveraging modern syntax and typing)
+- **Framework**: [Laravel 12 (Skeleton)](https://laravel.com/) - Core business logic and API routing.
+- **Database**: MySQL 8.0 (Ensuring data integrity and unique constraints).
+- **Architecture**: Service-Repository pattern with DTOs for type-safe data transfer and clean separation of concerns.
+- **Containerization**: Docker & Docker Compose.
+- **Testing**: PHPUnit 11+ for automated quality assurance.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 🏗️ Design Notes
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### Idempotency Strategy
+The system ensures that each `event_id` is processed exactly once:
+1.  **Application-level Check**: Before insertion, the system verifies if the `event_id` already exists in storage.
+2.  **Database-level Enforcement**: A `UNIQUE` index on `event_id` serves as the final source of truth.
+3.  **Exception Handling**: Concurrent requests that pass the application check simultaneously will trigger a `DuplicateEventException` at the database level, which is caught and handled to record a "duplicate" count instead of failing the request.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Concurrency Strategy
+Relying on database-level atomic guarantees and unique constraints allows the system to remain safe under high concurrency without requiring heavy application-level locks (e.g., Redis locks), which simplifies the architecture while maintaining correctness.
 
-## Laravel Sponsors
+### Decisions & Tradeoffs
+-   **Partial Accept (Default Strategy)**: The system implements a "partial accept" strategy for batch ingestion. Valid events are stored, and invalid ones are reported with their index and error details in the response. This maximizes data throughput from external systems.
+-   **Fail-Fast Alternative**: A "fail-fast" mode is available via configuration (`config/event_transfers.php`) which rejects the entire batch if a single validation error occurs.
+-   **Events Count Calculation**: The summary endpoint returns the count of *all* stored events for a station (all statuses), while the total amount sums *only* approved events. This provides a clear distinction between "total throughput" and "reconciled amount".
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## 🔧 Installation & Running
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 🐳 Docker
+You can run the entire environment (Nginx + PHP-FPM + MySQL) using Docker:
 
-## Contributing
+1.  **Build and Run**:
+    ```bash
+    docker compose up --build -d
+    ```
+    The application will be accessible at `http://localhost:8000`.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## 🧪 Testing
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+The project includes a comprehensive test suite covering:
+1.  Batch insert counts (inserted vs duplicates).
+2.  Idempotency verification (totals unchanged by duplicates).
+3.  Out-of-order event arrivals.
+4.  Concurrent ingestion safety.
+5.  Summary calculation accuracy.
+6.  Validation strategy behavior.
 
-## Security Vulnerabilities
+### Run Tests Locally:
+```bash
+php artisan test
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Run Tests in Docker:
+```bash
+docker compose exec app php artisan test
+```
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 📡 API Reference
+
+### 1. Ingest Transfers
+`POST /api/transfers`
+
+**Sample Payload:**
+```json
+{
+  "events": [
+    {
+      "event_id": "uuid-1234",
+      "station_id": 1,
+      "amount": 100.5,
+      "status": "approved",
+      "created_at": "2026-02-19T10:00:00Z"
+    }
+  ]
+}
+```
+
+**Response (Partial Accept):**
+```json
+{
+  "inserted": 1,
+  "duplicates": 0,
+  "validation_failed_items": []
+}
+```
+
+**Curl Example:**
+
+```bash
+curl -X POST http://localhost:8000/api/transfers \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "events": [
+      {
+        "event_id": "uuid-1234",
+        "station_id": 1,
+        "amount": 100.5,
+        "status": "approved",
+        "created_at": "2026-02-19T10:00:00Z"
+      }
+    ]
+  }'
+```
+
+### 2. Station Summary
+`GET /api/stations/{station_id}/summary`
+
+**Response:**
+```json
+{
+  "station_id": 1,
+  "total_approved_amount": 100.5,
+  "events_count": 1
+}
+```
+
+**Curl Example:**
+
+```bash
+curl -X GET "http://localhost:8000/api/stations/1/summary" \
+  -H "Accept: application/json"
+```
+
+---
+
+## 📦 Deliverables Note
+- **Postman Collection**: Found in the root directory as `Event_Transfer_Collection.json`.
+- **Commit History**: Readable history showing iterative progress and refactors.
+- **Logging**: Basic level logging implemented for critical ingestion failures or duplicate detections at the repository level.
