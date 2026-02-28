@@ -5,6 +5,7 @@ namespace App\Repositories\Transfers;
 use App\Dtos\TransferEventDto;
 use App\Dtos\TransferFilterDto;
 use App\Dtos\StationSummaryDto;
+use App\Dtos\StoreBatchResultDto;
 use App\Models\TransferEvent;
 use App\Exceptions\DuplicateEventException;
 use Illuminate\Support\Collection;
@@ -15,9 +16,8 @@ abstract class BaseTransferRepository
 {
     /**
      * @param TransferEventDto[] $events
-     * @return array{inserted: int, duplicates: int}
      */
-    public function storeBatch(Collection $events): array
+    public function storeBatch(Collection $events): StoreBatchResultDto
     {
         $insertedCount = 0;
         $duplicateCount = 0;
@@ -47,10 +47,10 @@ abstract class BaseTransferRepository
             }
         }
 
-        return [
-            'inserted' => $insertedCount,
-            'duplicates' => $duplicateCount,
-        ];
+        return new StoreBatchResultDto(
+            inserted: $insertedCount,
+            duplicates: $duplicateCount,
+        );
     }
 
     /**

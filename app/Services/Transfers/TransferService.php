@@ -5,6 +5,7 @@ namespace App\Services\Transfers;
 use App\Dtos\TransferEventDto;
 use App\Dtos\TransferFilterDto;
 use App\Dtos\StationSummaryDto;
+use App\Dtos\StoreBatchResultDto;
 use App\Repositories\Transfers\BaseTransferRepository;
 
 class TransferService implements TransferServiceInterface
@@ -14,7 +15,7 @@ class TransferService implements TransferServiceInterface
     /**
      * @param array $events
      */
-    public function store(array $events): array
+    public function store(array $events): StoreBatchResultDto
     {
         $events = TransferEventDto::collection($events);
 
