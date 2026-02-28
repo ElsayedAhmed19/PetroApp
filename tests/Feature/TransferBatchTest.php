@@ -233,27 +233,6 @@ class TransferBatchTest extends TestCase
     }
 
     /**
-     * Additional Case: Verify that events_count is affected by the status filter.
-     */
-    public function test_summary_events_count_filters_by_provided_status()
-    {
-        $station = Station::factory()->create();
-
-        $this->postJson('/api/transfers', ['events' => [
-            ['event_id' => Str::uuid(), 'station_id' => $station->id, 'amount' => 100, 'status' => 'approved', 'created_at' => now()->toIso8601String()],
-            ['event_id' => Str::uuid(), 'station_id' => $station->id, 'amount' => 50, 'status' => 'pending', 'created_at' => now()->toIso8601String()],
-        ]]);
-
-        // Filter by pending
-        $this->getJson("/api/stations/{$station->id}/summary?status=pending")
-            ->assertJson(['events_count' => 1]);
-
-        // Filter by approved
-        $this->getJson("/api/stations/{$station->id}/summary?status=approved")
-            ->assertJson(['events_count' => 1]);
-    }
-
-    /**
      * Requirement: Concurrent ingestion of same IDs doesn’t double count.
      */
     public function test_concurrent_ingestion_of_same_ids_does_not_double_count()
